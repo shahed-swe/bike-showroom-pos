@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #f6f8fb;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+html.dark body {
+  background: #0a0a0a;
+  color: #f1f5f9;
+}
+
+html[data-lang="bn"] body,
+html[data-lang="bn"] input,
+html[data-lang="bn"] select,
+html[data-lang="bn"] textarea,
+html[data-lang="bn"] button {
+  font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Inter', system-ui, sans-serif;
+}
+
+html[data-lang="bn"] .font-display {
+  font-family: 'Hind Siliguri', 'Noto Sans Bengali', 'Poppins', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary {
+    @apply btn bg-gradient-to-r from-brand-700 to-brand-500 text-white shadow-soft hover:from-brand-800 hover:to-brand-600;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-slate-700 border border-slate-200 hover:bg-slate-50
+           dark:bg-ink-800 dark:text-slate-200 dark:border-ink-700 dark:hover:bg-ink-700;
+  }
+  .btn-danger {
+    @apply btn bg-rose-500 text-white hover:bg-rose-600;
+  }
+  .btn-ghost {
+    @apply btn text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-ink-800;
+  }
+  .input {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none ring-brand-500/20 transition focus:border-brand-500 focus:ring-2
+           dark:bg-ink-800 dark:border-ink-700 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:border-brand-500;
+  }
+  .label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1;
+  }
+  .card {
+    @apply rounded-2xl bg-white shadow-card border border-slate-100
+           dark:bg-ink-900 dark:border-ink-800 dark:shadow-card-dark;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
+  }
+  .badge-green { @apply badge bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300; }
+  .badge-amber { @apply badge bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300; }
+  .badge-rose  { @apply badge bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300; }
+  .badge-blue  { @apply badge bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300; }
+  .badge-slate { @apply badge bg-slate-100 text-slate-700 dark:bg-ink-800 dark:text-slate-300; }
+  .table-wrap {
+    @apply card overflow-hidden;
+  }
+  table.data {
+    @apply w-full text-sm;
+  }
+  table.data thead th {
+    @apply bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500 px-4 py-3 border-b border-slate-100
+           dark:bg-ink-800/60 dark:text-slate-400 dark:border-ink-800;
+  }
+  table.data tbody td {
+    @apply px-4 py-3 border-b border-slate-50 text-slate-700
+           dark:text-slate-300 dark:border-ink-800/60;
+  }
+  table.data tbody tr:hover {
+    @apply bg-slate-50/60 dark:bg-ink-800/40;
+  }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+::-webkit-scrollbar-track { background: transparent; }
+html.dark ::-webkit-scrollbar-thumb { background: #2a2a2a; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+/* Receipt area — explicit light Tailwind classes are used inside (no dark: variants)
+   so it naturally stays light in both themes. The .receipt-light marker class
+   exists only to opt the receipt out of any future global dark-mode CSS. */
+
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    background: white !important;
+    color: black !important;
+  }
+  .no-print { display: none !important; }
+}

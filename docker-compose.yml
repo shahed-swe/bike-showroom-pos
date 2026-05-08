@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: habib_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: habib
+      POSTGRES_PASSWORD: habib_secret
+      POSTGRES_DB: habib_showroom
+    ports:
+      - "5433:5432"
+    volumes:
+      - habib_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U habib -d habib_showroom"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  habib_pgdata:
