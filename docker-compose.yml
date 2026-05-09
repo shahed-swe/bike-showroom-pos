@@ -39,9 +39,9 @@ services:
       DB_USER: habib
       DB_PASSWORD: habib_secret
       DB_LOGGING: "false"
-      # Set to "true" so the first run auto-loads demo data.
-      # Change to "false" if you don't want demo data.
-      AUTO_SEED: "true"
+      # Seed only ensures the admin user + default settings (no demo data).
+      # Admin is also auto-created on every backend start, so this is optional.
+      AUTO_SEED: "false"
     volumes:
       - habib_uploads:/app/uploads
     expose:
