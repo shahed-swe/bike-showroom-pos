@@ -52,7 +52,7 @@ const translations = {
     'nav.logout': 'Log out',
 
     // App branding
-    'app.name': 'Habib Bikes',
+    'app.name': 'Habib Bike Store',
     'app.tagline': 'Showroom Manager',
 
     // Login
