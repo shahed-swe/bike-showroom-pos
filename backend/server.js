@@ -11,7 +11,7 @@ const { errorHandler } = require('./src/middleware/errorHandler');
 const { ensureDefaultAdmin, ensureDefaultSettings } = require('./src/scripts/bootstrap');
 
 const app = express();
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 8088;
 
 // Ensure folders exist
 const uploadsDir = path.join(__dirname, 'uploads');

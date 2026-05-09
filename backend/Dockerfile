@@ -18,6 +18,6 @@ RUN chmod +x docker-entrypoint.sh
 # Uploads directory mounted by compose; ensure it exists at build-time too
 RUN mkdir -p uploads/products uploads/receipts data
 
-EXPOSE 5050
+EXPOSE 8088
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

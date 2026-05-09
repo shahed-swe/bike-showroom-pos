@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api, { formatBDT } from '../lib/api';
+import api, { formatBDT, assetUrl } from '../lib/api';
 import { useT } from '../i18n';
 import toast from 'react-hot-toast';
 import { Search, Bike, Wrench, Plus, Minus, ShoppingCart, User, X } from 'lucide-react';
@@ -203,7 +203,7 @@ export default function POS() {
                 <div key={item.product_id} className="p-3 flex gap-3">
                   <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-ink-800 overflow-hidden grid place-items-center flex-shrink-0">
                     {item.image
-                      ? <img src={item.image} className="w-full h-full object-cover" alt="" />
+                      ? <img src={assetUrl(item.image)} className="w-full h-full object-cover" alt="" />
                       : <Wrench size={18} className="text-slate-300 dark:text-ink-700"/>}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -343,7 +343,7 @@ export default function POS() {
                   >
                     <div className="aspect-square bg-slate-100 dark:bg-ink-800 relative">
                       {p.image ? (
-                        <img src={p.image} className="w-full h-full object-cover" alt="" />
+                        <img src={assetUrl(p.image)} className="w-full h-full object-cover" alt="" />
                       ) : (
                         <div className="w-full h-full grid place-items-center text-slate-300 dark:text-ink-700">
                           {p.category === 'bike' ? <Bike size={32} /> : <Wrench size={28} />}

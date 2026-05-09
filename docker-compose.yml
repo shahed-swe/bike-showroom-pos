@@ -1,7 +1,7 @@
 version: '2.4'
 
 # ────────────────────────────────────────────────────────────────────
-# Habib Bike Showroom — full stack in Docker
+# Habib Bike Showroom — full stack in Docker (no nginx)
 #
 # How to start:
 #   docker compose up -d         (or:  sudo docker-compose up -d)
@@ -11,8 +11,8 @@ version: '2.4'
 #   docker compose down -v       (also wipes the database + uploaded files)
 #
 # After it's running:
-#   • Frontend (open in browser):  http://localhost:8080
-#   • Backend API (optional):      http://localhost:5050/api/health
+#   • Frontend (open in browser):  http://<server-ip>:5173
+#   • Backend API:                 http://<server-ip>:8088/api/health
 #   • Postgres (optional):         localhost:5433 (user: habib / pass: habib_secret)
 #
 # Default login:  admin / admin123
@@ -48,7 +48,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      PORT: 5050
+      PORT: 8088
       NODE_ENV: production
       JWT_SECRET: bike_showroom_super_secret_key_change_this_in_production_2026
       JWT_EXPIRES_IN: 7d
@@ -64,8 +64,8 @@ services:
     volumes:
       - habib_uploads:/app/uploads
     ports:
-      # Optional — direct backend access. The frontend already proxies /api → backend internally.
-      - "5050:5050"
+      # Backend listens here. Frontend JS calls it directly (cross-origin, CORS enabled).
+      - "8088:8088"
 
   frontend:
     build:
@@ -76,10 +76,9 @@ services:
     depends_on:
       - backend
     ports:
-      # ★ Open this in your browser → http://localhost:8080
-      - "8080:80"
+      # ★ Open this in your browser → http://<server-ip>:5173
+      - "5173:5173"
 
 volumes:
   habib_pgdata:
   habib_uploads:
-  

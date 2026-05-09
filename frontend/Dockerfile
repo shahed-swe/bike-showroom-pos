@@ -1,4 +1,4 @@
-# Build stage
+# Build stage — produce production dist
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -9,15 +9,18 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Serve stage — small nginx image
-FROM nginx:alpine
+# Serve stage — small node image with `serve` for static SPA
+FROM node:20-alpine AS serve
 
-# Replace default nginx config with our own
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+WORKDIR /app
 
-# Copy built static files
-COPY --from=build /app/dist /usr/share/nginx/html
+# `serve` is a tiny static file server that handles SPA fallback (--single).
+RUN npm install -g serve@14
 
-EXPOSE 80
+COPY --from=build /app/dist ./dist
 
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 5173
+
+# -s: SPA mode (rewrite all routes to index.html for React Router)
+# -l: listen port
+CMD ["serve", "-s", "dist", "-l", "5173"]

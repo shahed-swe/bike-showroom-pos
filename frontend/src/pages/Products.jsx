@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api, { formatBDT } from '../lib/api';
+import api, { formatBDT, assetUrl } from '../lib/api';
 import { useT } from '../i18n';
 import Modal from '../components/Modal';
 import toast from 'react-hot-toast';
@@ -206,7 +206,7 @@ export default function Products() {
               <Link to={`/products/${p.id}`} className="block">
                 <div className="aspect-[4/3] bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
                   {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <img src={assetUrl(p.image)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="w-full h-full grid place-items-center text-slate-300 dark:text-ink-700">
                       {p.category === 'bike' ? <Bike size={48} /> : <Wrench size={40} />}
@@ -352,7 +352,7 @@ export default function Products() {
                 {(imageFile || editing?.image) && (
                   <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 dark:bg-ink-800">
                     <img
-                      src={imageFile ? URL.createObjectURL(imageFile) : editing.image}
+                      src={imageFile ? URL.createObjectURL(imageFile) : assetUrl(editing.image)}
                       alt=""
                       className="w-full h-full object-cover"
                     />

@@ -14,5 +14,5 @@ if [ "${AUTO_SEED:-false}" = "true" ]; then
   echo ""
 fi
 
-echo "🚀 Starting API server on port ${PORT:-5050}…"
+echo "🚀 Starting API server on port ${PORT:-8088}…"
 exec node server.js

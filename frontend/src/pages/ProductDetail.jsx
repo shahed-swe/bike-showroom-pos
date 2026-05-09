@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api, { formatBDT, formatDate } from '../lib/api';
+import api, { formatBDT, formatDate, assetUrl } from '../lib/api';
 import { useT } from '../i18n';
 import { Bike, Wrench, ArrowLeft, TrendingUp, Package, DollarSign, ShoppingBag } from 'lucide-react';
 import {
@@ -47,7 +47,7 @@ export default function ProductDetail() {
         <div className="card overflow-hidden">
           <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200">
             {product.image ? (
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <img src={assetUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full grid place-items-center text-slate-300 dark:text-ink-700">
                 {product.category === 'bike' ? <Bike size={80} /> : <Wrench size={64} />}
