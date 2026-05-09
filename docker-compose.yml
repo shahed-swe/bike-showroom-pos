@@ -1,3 +1,23 @@
+version: '3.8'
+
+# ────────────────────────────────────────────────────────────────────
+# Habib Bike Showroom — full stack in Docker
+#
+# How to start:
+#   docker compose up -d         (or:  sudo docker-compose up -d)
+#
+# How to stop:
+#   docker compose down          (data persists)
+#   docker compose down -v       (also wipes the database + uploaded files)
+#
+# After it's running:
+#   • Frontend (open in browser):  http://localhost:8080
+#   • Backend API (optional):      http://localhost:5050/api/health
+#   • Postgres (optional):         localhost:5433 (user: habib / pass: habib_secret)
+#
+# Default login:  admin / admin123
+# ────────────────────────────────────────────────────────────────────
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -8,8 +28,7 @@ services:
       POSTGRES_PASSWORD: habib_secret
       POSTGRES_DB: habib_showroom
     ports:
-      # Optional: exposed on host port 5433 so you can inspect with a SQL client.
-      # Remove this if you don't need external DB access.
+      # Optional — exposed so you can connect with a SQL client. Remove if not needed.
       - "5433:5432"
     volumes:
       - habib_pgdata:/var/lib/postgresql/data
@@ -39,13 +58,14 @@ services:
       DB_USER: habib
       DB_PASSWORD: habib_secret
       DB_LOGGING: "false"
-      # Seed only ensures the admin user + default settings (no demo data).
-      # Admin is also auto-created on every backend start, so this is optional.
-      AUTO_SEED: "false"
+      # Auto-seed dummy data on first start (idempotent — safe to leave on).
+      # Change to "false" once you've added your real data.
+      AUTO_SEED: "true"
     volumes:
       - habib_uploads:/app/uploads
-    expose:
-      - "5050"
+    ports:
+      # Optional — direct backend access. The frontend already proxies /api → backend internally.
+      - "5050:5050"
 
   frontend:
     build:
@@ -56,7 +76,7 @@ services:
     depends_on:
       - backend
     ports:
-      # Open this URL in your browser → http://localhost:8080
+      # ★ Open this in your browser → http://localhost:8080
       - "8080:80"
 
 volumes:
