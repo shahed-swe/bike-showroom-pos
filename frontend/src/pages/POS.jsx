@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api, { formatBDT, assetUrl } from '../lib/api';
 import { useT } from '../i18n';
 import toast from 'react-hot-toast';
-import { Search, Bike, Wrench, Plus, Minus, ShoppingCart, User, X } from 'lucide-react';
+import { Search, Bike, Wrench, Plus, Minus, ShoppingCart, User, X, UserPlus, Check } from 'lucide-react';
 
 export default function POS() {
   const nav = useNavigate();
@@ -20,6 +20,7 @@ export default function POS() {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [savingCustomer, setSavingCustomer] = useState(false);
 
   useEffect(() => {
     api.get('/products').then((r) => setProducts(r.data));
@@ -106,6 +107,29 @@ export default function POS() {
     setCart((prev) => prev.filter((c) => c.product_id !== productId));
   }
 
+  async function saveCustomer() {
+    const name = customer.name.trim();
+    if (!name) {
+      toast.error(t('pos.customer_name_required'));
+      return;
+    }
+    setSavingCustomer(true);
+    try {
+      const res = await api.post('/customers', {
+        name,
+        phone: customer.phone.trim() || null,
+      });
+      const created = res.data;
+      setCustomers((prev) => [created, ...prev]);
+      setCustomer({ id: created.id, name: created.name, phone: created.phone || '' });
+      toast.success(t('pos.customer_saved'));
+    } catch (err) {
+      toast.error(err.response?.data?.error || t('common.failed'));
+    } finally {
+      setSavingCustomer(false);
+    }
+  }
+
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const subtotal = cart.reduce((s, i) => s + i.quantity * i.unit_price, 0);
   const total = subtotal - Number(discount || 0) + Number(tax || 0);
@@ -141,9 +165,11 @@ export default function POS() {
   }
 
   // The cart UI block — used inline on desktop, in a drawer on mobile.
-  function CartContent() {
-    return (
-      <>
+  // IMPORTANT: this is a JSX expression, not a nested component. Declaring it as
+  // a component (function CartContent()) here would create a new component type
+  // on every render, unmount/remount the inputs and steal focus on each keystroke.
+  const cartContent = (
+    <>
         <div className="p-4 border-b border-slate-100 dark:border-ink-800 flex items-center justify-between">
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
             <ShoppingCart size={18} /> {t('pos.cart')}
@@ -168,8 +194,15 @@ export default function POS() {
         </div>
 
         <div className="p-4 border-b border-slate-100 dark:border-ink-800">
-          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
-            <User size={12} />{t('pos.customer')}
+          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1">
+              <User size={12} />{t('pos.customer')}
+            </span>
+            {customer.id && (
+              <span className="badge-green text-[10px] flex items-center gap-1">
+                <Check size={10} /> {t('pos.customer_saved_badge')}
+              </span>
+            )}
           </div>
           <div className="space-y-2">
             <input
@@ -187,8 +220,19 @@ export default function POS() {
               className="input"
               placeholder={t('pos.phone_optional')}
               value={customer.phone}
-              onChange={(e) => setCustomer({ ...customer, phone: e.target.value })}
+              onChange={(e) => setCustomer({ ...customer, id: null, phone: e.target.value })}
             />
+            {!customer.id && customer.name.trim() && (
+              <button
+                type="button"
+                onClick={saveCustomer}
+                disabled={savingCustomer}
+                className="btn-secondary w-full py-1.5 text-xs"
+              >
+                <UserPlus size={12} />
+                {savingCustomer ? t('common.saving') : t('pos.save_as_customer')}
+              </button>
+            )}
           </div>
         </div>
 
@@ -290,8 +334,7 @@ export default function POS() {
           </button>
         </div>
       </>
-    );
-  }
+  );
 
   return (
     <>
@@ -370,7 +413,7 @@ export default function POS() {
 
         {/* Desktop cart inline */}
         <div className="hidden lg:flex lg:col-span-2 card flex-col overflow-hidden">
-          <CartContent />
+          {cartContent}
         </div>
       </div>
 
@@ -408,7 +451,7 @@ export default function POS() {
           }`}
         >
           <div className="w-12 h-1.5 bg-slate-300 rounded-full mx-auto mt-2 mb-1" />
-          <CartContent />
+          {cartContent}
         </div>
       </div>
     </>

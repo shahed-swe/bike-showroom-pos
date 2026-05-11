@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { formatBDT, formatDate } from '../lib/api';
 import { useT } from '../i18n';
-import { Search, Eye, ReceiptText } from 'lucide-react';
+import { Search, Eye, ReceiptText, Info } from 'lucide-react';
 
 export default function Sales() {
   const { t } = useT();
@@ -47,9 +47,13 @@ export default function Sales() {
           <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">{t('sales.revenue')}</div>
           <div className="font-display text-2xl font-bold text-slate-800 dark:text-slate-100">{formatBDT(totals.revenue)}</div>
         </div>
-        <div className="card p-4">
-          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">{t('sales.profit')}</div>
+        <div className="card p-4" title={t('sd.profit_explain_3')}>
+          <div className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold flex items-center gap-1">
+            {t('sales.profit')}
+            <Info size={11} className="text-slate-400 dark:text-slate-500" />
+          </div>
           <div className="font-display text-2xl font-bold text-emerald-600">{formatBDT(totals.profit)}</div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{t('sales.profit_formula')}</div>
         </div>
       </div>
 

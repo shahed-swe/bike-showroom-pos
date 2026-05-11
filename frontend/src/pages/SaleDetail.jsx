@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api, { formatBDT, formatDate } from '../lib/api';
 import { useT } from '../i18n';
-import { ArrowLeft, Printer, Bike } from 'lucide-react';
+import { ArrowLeft, Printer, Bike, Info } from 'lucide-react';
 
 export default function SaleDetail() {
   const { id } = useParams();
@@ -129,20 +129,45 @@ export default function SaleDetail() {
             <h3 className="font-display font-bold mb-3 text-slate-800 dark:text-slate-100">{t('sd.profit_analysis')}</h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">{t('sales.revenue')}</span>
+                <span className="text-slate-600 dark:text-slate-400">{t('pos.subtotal')}</span>
+                <span className="text-slate-800 dark:text-slate-100">{formatBDT(sale.subtotal)}</span>
+              </div>
+              {Number(sale.discount) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">− {t('pos.discount')}</span>
+                  <span className="text-rose-600">−{formatBDT(sale.discount)}</span>
+                </div>
+              )}
+              {Number(sale.tax) > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-slate-600 dark:text-slate-400">+ {t('pos.tax')}</span>
+                  <span className="text-slate-800 dark:text-slate-100">{formatBDT(sale.tax)}</span>
+                </div>
+              )}
+              <div className="flex justify-between pt-1 border-t border-slate-100 dark:border-ink-800">
+                <span className="text-slate-600 dark:text-slate-400 font-semibold">= {t('sales.revenue')}</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-100">{formatBDT(sale.total)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">{t('sd.cost_fifo')}</span>
-                <span className="font-semibold text-rose-600">{formatBDT(sale.total_cost)}</span>
+                <span className="text-slate-600 dark:text-slate-400">− {t('sd.cost_fifo')}</span>
+                <span className="font-semibold text-rose-600">−{formatBDT(sale.total_cost)}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-slate-100 dark:border-ink-800 font-display text-lg font-bold text-slate-800 dark:text-slate-100">
-                <span>{t('sd.profit')}</span>
+                <span>= {t('sd.profit')}</span>
                 <span className="text-emerald-600">{formatBDT(sale.profit)}</span>
               </div>
               <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                 {t('sd.margin')}: {sale.total > 0 ? ((sale.profit / sale.total) * 100).toFixed(1) : 0}%
               </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-ink-800 text-xs text-slate-600 dark:text-slate-400 space-y-1.5">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-300">
+                <Info size={12} /> {t('sd.how_profit_calculated')}
+              </div>
+              <div>{t('sd.profit_explain_1')}</div>
+              <div>{t('sd.profit_explain_2')}</div>
+              <div>{t('sd.profit_explain_3')}</div>
             </div>
           </div>
 

@@ -3,7 +3,7 @@ import api, { formatBDT, formatDate } from '../lib/api';
 import { useT } from '../i18n';
 import Modal from '../components/Modal';
 import toast from 'react-hot-toast';
-import { Plus, Warehouse, TrendingDown, TrendingUp } from 'lucide-react';
+import { Plus, Warehouse, TrendingDown, TrendingUp, Edit3, Trash2, Info } from 'lucide-react';
 
 export default function Stock() {
   const { t } = useT();
@@ -12,6 +12,7 @@ export default function Stock() {
   const [suppliers, setSuppliers] = useState([]);
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     product_id: '',
     supplier_id: '',
@@ -36,6 +37,7 @@ export default function Stock() {
   useEffect(() => { load(); }, []);
 
   function openModal() {
+    setEditing(null);
     setForm({
       product_id: '',
       supplier_id: '',
@@ -46,6 +48,36 @@ export default function Stock() {
       received_at: '',
     });
     setOpen(true);
+  }
+
+  function openEdit(b) {
+    setEditing(b);
+    setForm({
+      product_id: String(b.product_id),
+      supplier_id: b.supplier_id ? String(b.supplier_id) : '',
+      purchase_price: b.purchase_price,
+      selling_price: b.selling_price,
+      quantity: b.quantity_added,
+      notes: b.notes || '',
+      received_at: '',
+    });
+    setOpen(true);
+  }
+
+  async function removeBatch(b) {
+    const sold = b.quantity_added - b.quantity_remaining;
+    if (sold > 0) {
+      toast.error(t('stock.delete_blocked', { sold }));
+      return;
+    }
+    if (!confirm(t('stock.confirm_delete', { name: b.product_name }))) return;
+    try {
+      await api.delete(`/stock/batches/${b.id}`);
+      toast.success(t('common.deleted'));
+      load();
+    } catch (err) {
+      toast.error(err.response?.data?.error || t('common.failed'));
+    }
   }
 
   useEffect(() => {
@@ -61,13 +93,24 @@ export default function Stock() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      await api.post('/stock/in', {
-        ...form,
-        purchase_price: Number(form.purchase_price),
-        selling_price: Number(form.selling_price),
-        quantity: Number(form.quantity),
-      });
-      toast.success(t('stock.added'));
+      if (editing) {
+        await api.put(`/stock/batches/${editing.id}`, {
+          supplier_id: form.supplier_id || null,
+          purchase_price: Number(form.purchase_price),
+          selling_price: Number(form.selling_price),
+          quantity_added: Number(form.quantity),
+          notes: form.notes,
+        });
+        toast.success(t('common.updated'));
+      } else {
+        await api.post('/stock/in', {
+          ...form,
+          purchase_price: Number(form.purchase_price),
+          selling_price: Number(form.selling_price),
+          quantity: Number(form.quantity),
+        });
+        toast.success(t('stock.added'));
+      }
       setOpen(false);
       load();
     } catch (err) {
@@ -103,11 +146,12 @@ export default function Stock() {
               <th>{t('pd.col.added')}</th>
               <th>{t('pd.col.remaining')}</th>
               <th>{t('pd.col.notes')}</th>
+              <th className="text-right">{t('common.actions')}</th>
             </tr>
           </thead>
           <tbody>
             {batches.length === 0 && (
-              <tr><td colSpan="10" className="text-center text-slate-400 dark:text-slate-500 py-12">{t('stock.empty')}</td></tr>
+              <tr><td colSpan="11" className="text-center text-slate-400 dark:text-slate-500 py-12">{t('stock.empty')}</td></tr>
             )}
             {batches.map((b) => {
               const margin = b.selling_price - b.purchase_price;
@@ -137,6 +181,23 @@ export default function Stock() {
                     </span>
                   </td>
                   <td className="text-xs text-slate-500 dark:text-slate-400">{b.notes || '—'}</td>
+                  <td className="whitespace-nowrap text-right">
+                    <button
+                      onClick={() => openEdit(b)}
+                      title={t('common.edit')}
+                      className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-ink-800 text-slate-500 dark:text-slate-400"
+                    >
+                      <Edit3 size={14}/>
+                    </button>
+                    <button
+                      onClick={() => removeBatch(b)}
+                      title={t('common.delete')}
+                      disabled={b.quantity_added !== b.quantity_remaining}
+                      className="p-1.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    >
+                      <Trash2 size={14}/>
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -144,13 +205,14 @@ export default function Stock() {
         </table>
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title={t('stock.dialog.title')} size="md">
+      <Modal open={open} onClose={() => setOpen(false)} title={editing ? t('stock.dialog.edit_title') : t('stock.dialog.title')} size="md">
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="label">{t('stock.form.product')} *</label>
             <select
               required
-              className="input"
+              disabled={!!editing}
+              className="input disabled:bg-slate-50 dark:disabled:bg-ink-800 disabled:cursor-not-allowed"
               value={form.product_id}
               onChange={(e) => setForm({ ...form, product_id: e.target.value, selling_price: '' })}
             >
@@ -161,6 +223,9 @@ export default function Stock() {
                 </option>
               ))}
             </select>
+            {editing && (
+              <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">{t('stock.form.product_locked')}</div>
+            )}
           </div>
 
           <div>
@@ -204,15 +269,24 @@ export default function Stock() {
                 value={form.quantity}
                 onChange={(e) => setForm({ ...form, quantity: e.target.value })}
               />
+              {editing && (
+                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {t('stock.form.edit_qty_hint', {
+                    sold: editing.quantity_added - editing.quantity_remaining,
+                  })}
+                </div>
+              )}
             </div>
-            <div>
-              <label className="label">{t('stock.form.received_at')}</label>
-              <input
-                type="datetime-local" className="input"
-                value={form.received_at}
-                onChange={(e) => setForm({ ...form, received_at: e.target.value })}
-              />
-            </div>
+            {!editing && (
+              <div>
+                <label className="label">{t('stock.form.received_at')}</label>
+                <input
+                  type="datetime-local" className="input"
+                  value={form.received_at}
+                  onChange={(e) => setForm({ ...form, received_at: e.target.value })}
+                />
+              </div>
+            )}
           </div>
 
           {form.purchase_price && form.selling_price && (
@@ -241,7 +315,10 @@ export default function Stock() {
           <div className="flex justify-end gap-2 pt-4 border-t border-slate-100 dark:border-ink-800">
             <button type="button" onClick={() => setOpen(false)} className="btn-secondary">{t('common.cancel')}</button>
             <button type="submit" className="btn-primary" disabled={submitting}>
-              <Warehouse size={14} /> {submitting ? t('stock.adding') : t('stock.add_btn')}
+              <Warehouse size={14} />
+              {submitting
+                ? (editing ? t('common.saving') : t('stock.adding'))
+                : (editing ? t('common.update') : t('stock.add_btn'))}
             </button>
           </div>
         </form>

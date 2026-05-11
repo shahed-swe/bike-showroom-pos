@@ -73,6 +73,27 @@ async function updateBatch(id, payload) {
   if (payload.selling_price !== undefined) batch.selling_price = Number(payload.selling_price);
   if (payload.notes !== undefined) batch.notes = payload.notes;
   if (payload.supplier_id !== undefined) batch.supplier_id = payload.supplier_id || null;
+
+  // Allow changing the recorded quantity — useful when a quantity was entered by mistake.
+  // We can only safely change quantity_added by a delta that doesn't push quantity_remaining
+  // below zero (i.e. we can't "remove" units that have already been sold).
+  if (payload.quantity_added !== undefined) {
+    const newAdded = Number(payload.quantity_added);
+    if (!Number.isFinite(newAdded) || newAdded <= 0) {
+      throw new ApiError(400, 'quantity_added must be a positive number');
+    }
+    const sold = batch.quantity_added - batch.quantity_remaining;
+    if (newAdded < sold) {
+      throw new ApiError(
+        400,
+        `Cannot reduce quantity below already-sold units (${sold} sold from this batch)`
+      );
+    }
+    const delta = newAdded - batch.quantity_added;
+    batch.quantity_added = newAdded;
+    batch.quantity_remaining = batch.quantity_remaining + delta;
+  }
+
   await batch.save();
   return batch;
 }
